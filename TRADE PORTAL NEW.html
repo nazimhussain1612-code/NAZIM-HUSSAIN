@@ -1,0 +1,187 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRADE SERVICE | Shipment Management Portal</title>
+<style>
+:root{--navy:#123c61;--blue:#246aa5;--pale:#eef4fa;--line:#d5e0eb;--ink:#193650;--green:#168454;--amber:#a66a08}
+*{box-sizing:border-box}body{margin:0;background:#f2f5f9;color:var(--ink);font:13px "Segoe UI",Arial,sans-serif}
+header{background:linear-gradient(110deg,#123c61,#28618d);color:white;padding:17px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:20px;margin:0 0 4px}header p{margin:0;font-size:12px;opacity:.9}
+main{max-width:1500px;margin:17px auto;padding:0 15px}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 7px #183c5c0b}
+.stat{padding:13px 15px}.stat small{color:#627b92}.stat strong{display:block;font-size:23px;margin-top:5px;color:#163d60}
+.tabs,.toolbar,.actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.tabs{margin-bottom:10px}button,.btn{border:0;border-radius:6px;padding:9px 12px;background:#e7eef6;color:#173d60;cursor:pointer;font-weight:650;font-size:12px}
+button:hover{filter:brightness(.96)}button.primary{background:var(--blue);color:white}button.green{background:var(--green);color:white}button.red{background:#b83c3c;color:white}
+.panel{padding:15px;margin-bottom:14px}h2{font-size:16px;margin:0 0 12px}
+.hint{background:#f3f8fe;border:1px solid #dce9f7;padding:9px 11px;border-radius:6px;margin-bottom:13px;color:#345d80}
+.formgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+label{display:block;font-size:11px;font-weight:650;margin-bottom:5px;color:#294e70}
+input,select,textarea{width:100%;padding:8px;border:1px solid #cbd8e6;border-radius:5px;background:#fff;color:#183650;font:12px "Segoe UI",Arial}
+textarea{min-height:55px;resize:vertical}.wide{grid-column:span 2}.full{grid-column:1/-1}
+.toolbar{margin-bottom:10px}.toolbar input{flex:1;min-width:230px}
+.toolbar select{width:auto;min-width:150px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:7px;max-height:68vh}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1100px;table-layout:auto;font-size:11px}
+th{position:sticky;top:0;z-index:2;background:#eaf1f8;color:#234b70;font-weight:700}
+th,td{border-bottom:1px solid #e3eaf1;padding:8px 9px;text-align:left;vertical-align:top;white-space:normal;overflow-wrap:anywhere;max-width:220px}
+th:first-child,td:first-child{position:sticky;left:0;background:#f7faff;z-index:1;min-width:48px;text-align:center}
+th:first-child{z-index:3;background:#eaf1f8}
+tr:hover td{background:#f8fbff}td .status{display:inline-block;border-radius:12px;padding:4px 7px;background:#eaf2fb;color:#1d5a8e;white-space:nowrap}
+.status.shipped{background:#e5f5eb;color:#167344}.status.loading{background:#fff2d7;color:#8b5a08}
+.smallbtn{padding:5px 7px;font-size:10px;margin:2px}.linkbtn{color:#145d98;text-decoration:underline;cursor:pointer;font-weight:700}
+.muted{font-size:11px;color:#6d8298;margin-top:9px}.hidden{display:none}.doclist{font-size:10px;line-height:1.5}.pill{display:inline-block;background:#edf3f9;padding:3px 6px;border-radius:10px;margin:2px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr)}.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}.wide{grid-column:span 1}}
+</style></head><body>
+<header><div><h1>TRADE SERVICE</h1><p>Professional Import / Export Shipment Management Portal</p></div><div id="todayStamp"></div></header>
+<main>
+<section class="stats">
+<div class="stat"><small>Total Shipments</small><strong id="total">0</strong></div>
+<div class="stat"><small>Loading Allowed</small><strong id="loading">0</strong></div>
+<div class="stat"><small>Shipped</small><strong id="shipped">0</strong></div>
+<div class="stat"><small>Pending / Review</small><strong id="pending">0</strong></div>
+<div class="stat"><small>Documents Attached</small><strong id="docs">0</strong></div>
+</section>
+<nav class="tabs" id="sectionTabs"><button class="primary" onclick="switchSection('IMPORT')">IMPORT</button><button onclick="switchSection('EXPORT')">EXPORT</button><button onclick="switchSection('IMPORT KEPZ')">IMPORT KEPZ</button><button onclick="switchSection('EXPORT KEPZ')">EXPORT KEPZ</button></nav>
+<div class="hint" id="sectionHint">Current Section: EXPORT KEPZ — existing shipment data preserved.</div>
+<nav class="tabs">
+<button class="primary" id="tabEntry" onclick="showTab('entry')">+ New Shipment / Update</button>
+<button id="tabRecords" onclick="showTab('records')">Shipment Register</button>
+<button id="tabTracking" onclick="showTab('tracking')">Shipping Line Tracking</button>
+<button id="tabBackup" onclick="showTab('backup')">Backup & Data</button>
+</nav>
+<section class="panel" id="entry">
+<h2 id="formTitle">New Shipment / Daily Update</h2>
+<div class="hint">Har shipment mein Party Name select karein ya nayi party type karein. Register mein party filter se us party ka alag data dekhein. Save karne par update date automatically record hogi. New entries register ke end par add hongi aur serial numbering automatic rahegi.</div>
+<form id="shipmentForm"><div class="formgrid" id="formFields"></div>
+<div class="full" style="margin-top:12px"><label>Shipment Documents — BL / Tracking Slip / Other Documents</label>
+<div class="formgrid">
+<div><label>BL Copy</label><input type="file" id="fileBL" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"></div>
+<div><label>Tracking Slip</label><input type="file" id="fileTracking" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"></div>
+<div><label>Other Documents</label><input type="file" id="fileOther" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"></div>
+</div><div id="existingDocs" class="muted"></div></div>
+<div class="actions"><button class="primary" type="submit">Save Shipment / Update</button><button type="button" onclick="resetForm()">Clear Form</button></div></form>
+<div class="muted">Data browser ke is computer mein save hota hai. Documents IndexedDB mein local save hote hain. Regular backup banayein.</div>
+</section>
+<section class="panel hidden" id="records">
+<h2>Shipment Register</h2>
+<div class="toolbar"><input id="search" placeholder="Search Party / GD / BL / FI Number / Booking / Container / Vessel..." oninput="render()">
+<select id="partyFilter" onchange="render()"><option value="">All Parties</option></select><select id="statusFilter" onchange="render()"><option value="">All Statuses</option><option>Loading Allowed</option><option>Consignment Shipped</option><option>Under Process</option><option>Pending</option><option>Delivered</option></select>
+<button class="green" onclick="exportCSV()">Export CSV</button><button onclick="showTab('backup')">Import CSV</button></div>
+<div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+<div class="muted" id="recordCount"></div></section>
+<section class="panel hidden" id="tracking"><h2>Shipping Line Tracking Directory</h2>
+<div class="hint">Shipping line select karein. Portal us carrier ki official tracking website open karega. BL ya Container number copy karke tracking page par enter karein.</div>
+<div class="formgrid" id="trackGrid"></div>
+<div class="muted">Tracking websites ke links official carrier pages ke liye set kiye gaye hain. Actual live status carrier website par verify hoga.</div>
+</section>
+<section class="panel hidden" id="backup"><h2>Backup & Data Management</h2>
+<p>CSV backup mein shipment details aur document filenames export honge. Attached PDF/JPG files browser ke local document storage mein rehti hain; unki separate backup copy bhi rakhein.</p>
+<div class="actions"><button class="green" onclick="exportCSV()">Export CSV Backup</button><label class="btn">Import CSV<input id="csvFile" type="file" accept=".csv" style="display:none" onchange="importCSV(event)"></label><button onclick="exportDocumentManifest()">Export Document List</button></div>
+<div class="muted">CSV import sirf current section ke records replace karega. Import se pehle current backup download kar lein.</div>
+</section>
+</main>
+<script>
+let FIELDS=["GD NO/BL NO", "BL", "BOOKING NO", "CONSIGNEE NAME", "INVOICE NO", "CONTAINER NO", "FI NO", "CURRENT GD STATUS", "SHIPPING LINE", "POR OF LOADING", "VESSEL NAME", "ETA/ETD", "POR OF DISCHARGE", "POD ETA", "TODAY UPDATE"], LABELS={"GD NO/BL NO": "GD Number", "BL": "BL Number", "BOOKING NO": "Booking Number", "CONSIGNEE NAME": "Consignee Name", "INVOICE NO": "Invoice Number", "CONTAINER NO": "Container Number", "CURRENT GD STATUS": "Current GD / Shipment Status", "SHIPPING LINE": "Shipping Line", "POR OF LOADING": "Port of Loading", "VESSEL NAME": "Vessel Name", "ETA/ETD": "ETD / Sailing Date", "POR OF DISCHARGE": "Port of Discharge", "POD ETA": "ETA", "TODAY UPDATE": "Latest Update / Daily Notes", "FI NO": "FI Number"}, INITIAL=[{"SR.NO": "01", "GD NO/BL NO": "PQZE-EX-6318-11-09-2026]", "BL": "120600065075-", "BOOKING NO": "120600065075-", "CONSIGNEE NAME": "M/S NIPPON TALC CO., LTD.", "INVOICE NO": "FM2607201", "CONTAINER NO": "4X40", "CURRENT GD STATUS": "Consignment Shipped", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "SAPT", "VESSEL NAME": "X PRESS CAPELA 26004E", "ETA/ETD": "9/10/2026    9/12/2026", "POR OF DISCHARGE": "OSAKA JAPAN", "POD ETA": "OCT-17-2026", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-1", "UPDATED_AT": ""}, {"SR.NO": "02", "GD NO/BL NO": "PQZE-EX-5704-04-09-2026", "BL": "CULVKHI2600103", "BOOKING NO": "", "CONSIGNEE NAME": "M/S NIPPON TALC CO., LTD.", "INVOICE NO": "FM2606182", "CONTAINER NO": "05X40", "CURRENT GD STATUS": "Consignment Shipped", "SHIPPING LINE": "China United Lines Ltd", "POR OF LOADING": "", "VESSEL NAME": "HEMMA BHUM 017E", "ETA/ETD": "12-Sep-2026", "POR OF DISCHARGE": "NAGOYA,JAPAN", "POD ETA": "13-Oct-2026", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-2", "UPDATED_AT": ""}, {"SR.NO": "03", "GD NO/BL NO": "PQZE-OC-5766-05-09-2026", "BL": "", "BOOKING NO": "", "CONSIGNEE NAME": "", "INVOICE NO": "", "CONTAINER NO": "LCL PLT", "CURRENT GD STATUS": "", "SHIPPING LINE": "General Maritime (PVT) Ltd.", "POR OF LOADING": "", "VESSEL NAME": "MAERSK PUELO 636", "ETA/ETD": "", "POR OF DISCHARGE": "", "POD ETA": "", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-3", "UPDATED_AT": ""}, {"SR.NO": "05", "GD NO/BL NO": "PQZE-EX-6081-09-09-2026", "BL": "EGLV120600064702-", "BOOKING NO": "120600064702-", "CONSIGNEE NAME": "M/S NIPPON TALC CO., LTD.", "INVOICE NO": "FM2608212", "CONTAINER NO": "EGSU2154634", "CURRENT GD STATUS": "Consignment Shipped", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "KICT", "VESSEL NAME": "NORTHERN PRACTISE / 050", "ETA/ETD": "10-SEP-26    \t14-SEP-26", "POR OF DISCHARGE": "LAEM CHABANG (TH)", "POD ETA": "OCT-01-2026", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-4", "UPDATED_AT": ""}, {"SR.NO": "06", "GD NO/BL NO": "PQZE-EX-5883-07-09-2026", "BL": "EGLV120600066047", "BOOKING NO": "120600066047*", "CONSIGNEE NAME": "M/S NIPPON TALC CO., LTD.", "INVOICE NO": "", "CONTAINER NO": "EGHU8455360", "CURRENT GD STATUS": "Consignment Shipped", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "KICT", "VESSEL NAME": "NORTHERN PRACTISE / 050", "ETA/ETD": "10-SEP-26    \t14-SEP-27", "POR OF DISCHARGE": "LAEM CHABANG (TH)", "POD ETA": "OCT-01-2026", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-5", "UPDATED_AT": ""}, {"SR.NO": "07", "GD NO/BL NO": "", "BL": "120600067248-", "BOOKING NO": "120600067248-", "CONSIGNEE NAME": "RULLI ZHEWU TRADING CO LTD", "INVOICE NO": "", "CONTAINER NO": "EGSU3367845", "CURRENT GD STATUS": "", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "", "VESSEL NAME": "KMTC MOMBASA 2605E", "ETA/ETD": "SEP-28-2026", "POR OF DISCHARGE": "", "POD ETA": "OCT-23-2026", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-6", "UPDATED_AT": ""}, {"SR.NO": "08", "GD NO/BL NO": "", "BL": "", "BOOKING NO": "120600071491-", "CONSIGNEE NAME": "", "INVOICE NO": "", "CONTAINER NO": "", "CURRENT GD STATUS": "", "SHIPPING LINE": "", "POR OF LOADING": "", "VESSEL NAME": "", "ETA/ETD": "", "POR OF DISCHARGE": "", "POD ETA": "", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-7", "UPDATED_AT": ""}, {"SR.NO": "09", "GD NO/BL NO": "PQZE-EX-07561-250926", "BL": "120600070249-", "BOOKING NO": "120600070249-", "CONSIGNEE NAME": "M/S MARUO CALCIUM CO.,LTD.", "INVOICE NO": "FM2609228", "CONTAINER NO": "EITU0474235   1X20", "CURRENT GD STATUS": "loading allowed", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "KICT", "VESSEL NAME": "EVER ETHIC / 185", "ETA/ETD": "26-SEP-26   \t29-SEP-26", "POR OF DISCHARGE": "LAEM CHABANG,THAILAND", "POD ETA": "OCT-15-2026", "TODAY UPDATE": "OCT-15-2026", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-8", "UPDATED_AT": ""}, {"SR.NO": "10", "GD NO/BL NO": "PQZE-EX-7792-28-09-2026", "BL": "1206000702491-", "BOOKING NO": "1206000702491-", "CONSIGNEE NAME": "M/S Grand Siam Composites Co.,Ltd.", "INVOICE NO": "FM2608213", "CONTAINER NO": "TXGU6563062 01x40", "CURRENT GD STATUS": "loading allowed", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "KICT", "VESSEL NAME": "DP WORLD JABEL ALI 041 E", "ETA/ETD": "04-OCT-26   06-OCT-26", "POR OF DISCHARGE": "LAEM CHABANG,THAILAND", "POD ETA": "OCT-15-2026", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-9", "UPDATED_AT": ""}, {"SR.NO": "11", "GD NO/BL NO": "LOADING DATE V02/10/2026", "BL": "", "BOOKING NO": "KHIE55481300", "CONSIGNEE NAME": "", "INVOICE NO": "", "CONTAINER NO": "", "CURRENT GD STATUS": "", "SHIPPING LINE": "HMM-HMM Co., Ltd.", "POR OF LOADING": "", "VESSEL NAME": "HMM TACOMA Voyage : 0139W", "ETA/ETD": "", "POR OF DISCHARGE": "", "POD ETA": "", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-10", "UPDATED_AT": ""}, {"SR.NO": "12", "GD NO/BL NO": "PQZE-EX-6318-11-09-2026]", "BL": "EGLU120600065075-", "BOOKING NO": "120600065075", "CONSIGNEE NAME": "PQZE-EX-6318-11-09-2026", "INVOICE NO": "FM2607201", "CONTAINER NO": "04X40", "CURRENT GD STATUS": "Consignment Shipped", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "SAPT", "VESSEL NAME": "X-PRESS CAPELLA / 26004", "ETA/ETD": "17-SEP-26    20-SEP-26", "POR OF DISCHARGE": "OSAKA,JAPAN", "POD ETA": "OCT-17-2026", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-11", "UPDATED_AT": ""}, {"SR.NO": "", "GD NO/BL NO": "PQZE-EX-10237-24-10-2026", "BL": "120600078207", "BOOKING NO": "120600078207", "CONSIGNEE NAME": "MARUO CALCIUM CO.,LTD.", "INVOICE NO": "FM2610264", "CONTAINER NO": "01X20", "CURRENT GD STATUS": "Loading Allowed", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "SAPT", "VESSEL NAME": "X-PRESS CAPELLA / 26005", "ETA/ETD": "01 NOV 2026   05 NOV 2026", "POR OF DISCHARGE": "OSAKA,JAPAN", "POD ETA": "", "TODAY UPDATE": "", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-12", "UPDATED_AT": ""}, {"SR.NO": "13", "GD NO/BL NO": "PQZE-EX-10315-26-10-2026", "BL": "120600077693", "BOOKING NO": "120600077693", "CONSIGNEE NAME": "Grand Siam Composites Co.,Ltd.", "INVOICE NO": "FM2609236", "CONTAINER NO": "EGHU9177577", "CURRENT GD STATUS": "loading allowed", "SHIPPING LINE": "EVERGREEN LINE", "POR OF LOADING": "KICT", "VESSEL NAME": "NORTHERN PRACTISE / 051", "ETA/ETD": "26-10-20260 28-10-2026", "POR OF DISCHARGE": "LAEM CHABANG,THAILAND", "POD ETA": "12-Nov-2026", "TODAY UPDATE": "12-Nov-2026", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-13", "UPDATED_AT": ""}, {"SR.NO": "14", "GD NO/BL NO": "PQZE-EX-9665-19-10-2026", "BL": "HASLW06261000039", "BOOKING NO": "HASLW06261000039", "CONSIGNEE NAME": "M/S NIPPON TALC CO., LTD.", "INVOICE NO": "FM2609229", "CONTAINER NO": "8X40", "CURRENT GD STATUS": "loading allowed", "SHIPPING LINE": "HEUNG-A", "POR OF LOADING": "SAPT", "VESSEL NAME": "HEMMA BHUM / 018E", "ETA/ETD": "01 NOV 2026   04 NOV 2026", "POR OF DISCHARGE": "HITACHINAKA JAPAN", "POD ETA": "30-Nov-2026", "TODAY UPDATE": "30-Nov-2026", "FI NO": "", "REMARKS": "", "DOCUMENTS": [], "_id": "old-14", "UPDATED_AT": ""}];
+const KEY='faithMineralsShipmentPortal_v2';
+const SECTION_FIELDS={
+ 'IMPORT':['PARTY NAME','GD NO','GD DATE','HS CODE','BL NO','BOOKING NO','IMPORTER NAME','SUPPLIER / SHIPPER NAME','INVOICE NO','INVOICE VALUE','CONTAINER NO','SHIPPING LINE','FI NO','PORT OF LOADING','VESSEL NAME','ETD / SAILING DATE','PORT OF DISCHARGE','ETA','CURRENT GD / SHIPMENT STATUS','ASSESSMENT STATUS','LATEST UPDATE / DAILY NOTES','DAILY UPDATED','TRACKING','DOCUMENTS','ACTIONS'],
+ 'EXPORT':['PARTY NAME','GD NO','GD DATE','HS CODE','BL NO','BOOKING NO','EXPORTER NAME','BUYER / CONSIGNEE NAME','INVOICE NO','INVOICE VALUE','CONTAINER NO','SHIPPING LINE','FI NO','PORT OF LOADING','VESSEL NAME','ETD / SAILING DATE','PORT OF DISCHARGE','ETA','CURRENT GD / SHIPMENT STATUS','LATEST UPDATE / DAILY NOTES','DAILY UPDATED','TRACKING','DOCUMENTS','ACTIONS'],
+ 'IMPORT KEPZ':['PARTY NAME','GD NO/BL NO','BL','BOOKING NO','CONSIGNEE NAME','INVOICE NO','CONTAINER NO','FI NO','CURRENT GD STATUS','SHIPPING LINE','POR OF LOADING','VESSEL NAME','ETA/ETD','POR OF DISCHARGE','POD ETA','TODAY UPDATE'],
+ 'EXPORT KEPZ':['PARTY NAME','GD NO/BL NO','BL','BOOKING NO','CONSIGNEE NAME','INVOICE NO','CONTAINER NO','FI NO','CURRENT GD STATUS','SHIPPING LINE','POR OF LOADING','VESSEL NAME','ETA/ETD','POR OF DISCHARGE','POD ETA','TODAY UPDATE']
+};
+LABELS['PARTY NAME']='Party Name';LABELS['GD NO/BL NO']='GD Number';LABELS['BL']='BL Number';LABELS['BOOKING NO']='Booking Number';LABELS['CONSIGNEE NAME']='Consignee Name';LABELS['INVOICE NO']='Invoice Number';LABELS['CONTAINER NO']='Container Number';LABELS['FI NO']='FI Number';LABELS['CURRENT GD STATUS']='Current GD / Shipment Status';LABELS['POR OF LOADING']='Port of Loading';LABELS['VESSEL NAME']='Vessel Name';LABELS['ETA/ETD']='ETD / Sailing Date';LABELS['POR OF DISCHARGE']='Port of Discharge';LABELS['POD ETA']='ETA';LABELS['TODAY UPDATE']='Latest Update / Daily Notes';
+let currentSection='EXPORT KEPZ';FIELDS=SECTION_FIELDS[currentSection].slice();
+function sectionKey(name){return name==='EXPORT KEPZ'?KEY:'tradeService_'+name.replace(/[^A-Z0-9]/g,'_');}
+function switchSection(name){if(name===currentSection)return;currentSection=name;FIELDS=SECTION_FIELDS[name].slice();rows=loadSection(name).map(r=>({...r,'PARTY NAME':inferParty(r)}));editId=null;document.getElementById('sectionHint').textContent='Current Section: '+name+' — data is saved separately.';document.querySelectorAll('#sectionTabs button').forEach(b=>b.classList.toggle('primary',b.textContent===name));document.getElementById('formTitle').textContent='New '+name+' Shipment / Daily Update';document.getElementById('search').placeholder='Search '+name+' records...';buildForm();resetForm();render();updateStats();showTab('entry');}
+function inferParty(r){return r['PARTY NAME']||r['IMPORTER NAME']||r['EXPORTER NAME']||r['BUYER / CONSIGNEE NAME']||r['CONSIGNEE NAME']||r['SUPPLIER / SHIPPER NAME']||''}
+function loadSection(name){try{let x=localStorage.getItem(sectionKey(name));let data=x?JSON.parse(x):(name==='EXPORT KEPZ'?INITIAL:[]);return data.map(r=>{let y={...r};y['FI NO']=y['FI NO']||y['CRO NO']||y['CRO / DO NO']||'';y['PARTY NAME']=inferParty(y);delete y['CRO NO'];delete y['CRO / DO NO'];return y;});}catch(e){return []}}
+const CARRIERS={
+"EVERGREEN LINE":"https://ct.shipmentlink.com/servlet/TDB1_CargoTracking.do",
+"HMM / HYUNDAI":"https://www.hmm21.com/e-service/general/trackNTrace/TrackNTrace.do",
+"HEUNG-A":"https://ebiz.heungaline.com/Tracking",
+"CULINES / CHINA UNITED LINES":"https://www.culines.com/en/site/bill",
+"MAERSK":"https://www.maersk.com/tracking/",
+"KMTC":"https://www.ekmtc.com/index.html#/cargo-tracking",
+"COSCO SHIPPING":"https://elines.coscoshipping.com/ebusiness/cargotracking",
+"CMA CGM":"https://www.cma-cgm.com/ebusiness/tracking",
+"MSC":"https://www.msc.com/en/track-a-shipment",
+"HAPAG-LLOYD":"https://www.hapag-lloyd.com/en/online-business/track/track-by-container-solution.html",
+"ONE / OCEAN NETWORK EXPRESS":"https://www.one-line.com/one-ecom/manage-shipment/cargo-tracking",
+"OOCL":"https://www.oocl.com/eng/ourservices/eservices/cargotracking/Pages/CargoTracking.aspx",
+"YANG MING":"https://www.yangming.com/en/esolution/tracking/cargo_tracking",
+"ZIM":"https://www.zim.com/tools/track-a-shipment",
+"PIL / PACIFIC INTERNATIONAL LINES":"https://www.pilship.com/en-our-track-and-trace-pil-pacific-international-lines/120.html",
+"SM LINE":"https://esvc.smlines.com/smline/CUP_HOM_3301.do",
+"WAN HAI":"https://www.wanhai.com/",
+"SITC":"https://www.sitc.com/",
+"ARKAS LINE":"https://www.arkasline.com.tr/en/online-services/container-tracking",
+"APL":"https://www.apl.com/",
+"EMIRATES SHIPPING LINE":"https://www.emiratesline.com/",
+"X-PRESS FEEDERS":"https://www.x-pressfeeders.com/",
+"RCL / REGIONAL CONTAINER LINES":"https://www.rclgroup.com/",
+"GENERAL MARITIME":"https://www.google.com/search?q=General+Maritime+Pakistan+official+cargo+tracking",
+"OTHER / NOT LISTED":"https://www.google.com/search?q=shipping+line+official+cargo+tracking"
+};
+const carrierNames=Object.keys(CARRIERS);
+let rows=loadSection(currentSection).map(r=>({...r,'PARTY NAME':inferParty(r)})), editId=null;
+let dbPromise=null;
+function db(){if(!('indexedDB' in window))return Promise.reject(new Error('IndexedDB not supported'));if(!dbPromise)dbPromise=new Promise((res,rej)=>{const req=indexedDB.open('FaithMineralsShipmentDocs',1);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('docs'))d.createObjectStore('docs',{keyPath:'key'})};req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)});return dbPromise}
+async function saveDocs(id,files){
+ if(!files.length)return;
+ const d=await db();
+ await new Promise((resolve,reject)=>{
+  let tx;
+  try{tx=d.transaction('docs','readwrite')}catch(err){reject(err);return}
+  const st=tx.objectStore('docs');
+  const req=st.get(id);
+  req.onsuccess=()=>{
+   const old=req.result||{key:id,files:[]};
+   for(const f of files)old.files.push({name:f.name,category:f.category,type:f.type,blob:f.blob});
+   st.put(old);
+  };
+  req.onerror=()=>{try{tx.abort()}catch(e){};reject(req.error||new Error('Document read nahi ho saka'))};
+  tx.oncomplete=()=>resolve();
+  tx.onerror=()=>reject(tx.error||new Error('Document save nahi ho saka'));
+  tx.onabort=()=>reject(tx.error||new Error('Document save cancel ho gaya'));
+ });
+}
+async function getDocs(id){try{let d=await db();return await new Promise(resolve=>{let r=d.transaction('docs').objectStore('docs').get(id);r.onsuccess=()=>resolve(r.result?.files||[]);r.onerror=()=>resolve([])})}catch(e){return []}}
+function load(){return loadSection(currentSection)}
+function persist(){try{localStorage.setItem(sectionKey(currentSection),JSON.stringify(rows));updateStats()}catch(err){throw new Error('Shipment details browser Local Storage mein save nahi ho sakin: '+(err?.message||err))}}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showTab(id){['entry','records','tracking','backup'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));['Entry','Records','Tracking','Backup'].forEach((x,i)=>document.getElementById('tab'+x).classList.toggle('primary',['entry','records','tracking','backup'][i]===id));if(id==='records')render();if(id==='tracking')buildTracking()}
+function buildForm(){let box=document.getElementById('formFields');box.innerHTML=FIELDS.filter(f=>!['SR NO','DAILY UPDATED','TRACKING','DOCUMENTS','ACTIONS'].includes(f)).map(f=>{let label=LABELS[f]||f,cls=['PARTY NAME','CONSIGNEE NAME','VESSEL NAME','TODAY UPDATE','LATEST UPDATE / DAILY NOTES','SUPPLIER / SHIPPER NAME','BUYER / CONSIGNEE NAME'].includes(f)?'wide':'';let control=f==='PARTY NAME'?`<input name="PARTY NAME" list="partyOptions" autocomplete="off" placeholder="Select existing party or type new party"><datalist id="partyOptions">${[...new Set(rows.map(r=>inferParty(r).trim()).filter(Boolean))].sort().map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>`:['CURRENT GD STATUS','CURRENT GD / SHIPMENT STATUS','ASSESSMENT STATUS'].includes(f)?`<select name="${esc(f)}"><option value="">Select Status</option><option>Loading Allowed</option><option>Consignment Shipped</option><option>Under Process</option><option>Pending</option><option>Delivered</option><option>Assessed</option><option>Pending Documents</option><option>Under Assessment</option></select>`:`<input name="${esc(f)}" autocomplete="off">`;return `<div class="${cls}"><label>${esc(label)}</label>${control}</div>`}).join('')+`<div class="full"><label>Remarks / Next Action</label><textarea name="REMARKS" placeholder="Daily progress, pending document, follow-up, etc."></textarea></div>`}
+function resetForm(){editId=null;document.getElementById('shipmentForm').reset();document.getElementById('formTitle').textContent='New Shipment / Daily Update';document.getElementById('existingDocs').textContent=''}
+document.getElementById('shipmentForm').addEventListener('submit',async e=>{e.preventDefault();let fd=new FormData(e.target),obj={};FIELDS.filter(f=>!['SR NO','DAILY UPDATED','TRACKING','DOCUMENTS','ACTIONS'].includes(f)).forEach(f=>obj[f]=String(fd.get(f)||'').trim());obj.REMARKS=String(fd.get('REMARKS')||'').trim();obj.UPDATED_AT=new Date().toLocaleString();obj['DAILY UPDATED']=obj.UPDATED_AT;let id=editId||('shp-'+Date.now()+'-'+Math.random().toString(36).slice(2,7));obj._id=id;
+let allFiles=[];[['fileBL','BL'],['fileTracking','Tracking Slip'],['fileOther','Other Documents']].forEach(([input,category])=>{for(let f of document.getElementById(input).files)allFiles.push({name:f.name,category,type:f.type,blob:f})});
+const previousRows=rows.map(r=>({...r,DOCUMENTS:[...(r.DOCUMENTS||[])]}));
+ try{
+  if(editId){let ix=rows.findIndex(r=>r._id===editId);if(ix>=0)rows[ix]={...rows[ix],...obj}}else rows.push(obj);
+  obj.DOCUMENTS=[...((editId&&rows.find(r=>r._id===id)?.DOCUMENTS)||[]),...allFiles.map(f=>f.name)];
+  let saved=rows.findIndex(r=>r._id===id);if(saved>=0)rows[saved].DOCUMENTS=obj.DOCUMENTS;
+  await saveDocs(id,allFiles);
+  persist();resetForm();showTab('records');render();
+ }catch(err){
+  rows=previousRows;
+  alert('Save nahi ho saka. Browser storage full ya blocked ho sakti hai. Chrome mein site storage allow karein, private/incognito window band karein, aur dobara try karein. Technical detail: '+(err?.message||err));
+ }
+});
+function updateStats(){document.getElementById('total').textContent=rows.length;document.getElementById('loading').textContent=rows.filter(r=>(r['CURRENT GD STATUS']||r['CURRENT GD / SHIPMENT STATUS']||'').toLowerCase()==='loading allowed').length;document.getElementById('shipped').textContent=rows.filter(r=>(r['CURRENT GD STATUS']||r['CURRENT GD / SHIPMENT STATUS']||'').toLowerCase().includes('shipped')).length;document.getElementById('pending').textContent=rows.filter(r=>['pending','under process'].includes((r['CURRENT GD STATUS']||r['CURRENT GD / SHIPMENT STATUS']||'').toLowerCase())).length;document.getElementById('docs').textContent=rows.filter(r=>(r.DOCUMENTS||[]).length>0).length}
+function trackUrl(line){let s=(line||'').toUpperCase().replace(/[^A-Z0-9]/g,'');const aliases=[['EVERGREEN',['EVERGREEN','EGLV']],['HMM / HYUNDAI',['HMM','HYUNDAI']],['HEUNG-A',['HEUNGA','HASL']],['CULINES / CHINA UNITED LINES',['CULINES','CHINAUNITED','CULV']],['MAERSK',['MAERSK']],['KMTC',['KMTC']],['COSCO SHIPPING',['COSCO']],['CMA CGM',['CMACGM','CMA']],['MSC',['MSC']],['HAPAG-LLOYD',['HAPAG','HLCU']],['ONE / OCEAN NETWORK EXPRESS',['ONEY','OCEANNETWORK','ONELINE']],['OOCL',['OOCL']],['YANG MING',['YANGMING']],['ZIM',['ZIM']],['PIL / PACIFIC INTERNATIONAL LINES',['PIL']],['SM LINE',['SMLINE']],['WAN HAI',['WANHAI']],['SITC',['SITC']],['ARKAS LINE',['ARKAS']],['APL',['APL']],['EMIRATES SHIPPING LINE',['EMIRATES']],['X-PRESS FEEDERS',['XPRESS']],['RCL / REGIONAL CONTAINER LINES',['RCL']]];for(const [name,tokens] of aliases){if(tokens.some(t=>s.includes(t)))return CARRIERS[name]}if(s.includes('GENERALMARITIME'))return CARRIERS['GENERAL MARITIME'];return ''}
+function render(){let q=(document.getElementById('search').value||'').toLowerCase(),status=document.getElementById('statusFilter').value,party=document.getElementById('partyFilter').value;let parties=[...new Set(rows.map(r=>inferParty(r).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));let pf=document.getElementById('partyFilter'),oldParty=party;pf.innerHTML='<option value="">All Parties</option>'+parties.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');pf.value=parties.includes(oldParty)?oldParty:'';party=pf.value;let found=rows.map((r,i)=>({r,i})).filter(({r})=>(!party||inferParty(r).trim()===party)&&(!status||r['CURRENT GD STATUS']===status||r['CURRENT GD / SHIPMENT STATUS']===status)&&(!q||FIELDS.some(f=>String(r[f]||'').toLowerCase().includes(q))||String(r['SR.NO']||'').includes(q)||String(r.REMARKS||'').toLowerCase().includes(q)));
+document.getElementById('thead').innerHTML='<tr><th>SR NO</th>'+FIELDS.filter(f=>!['SR NO','DAILY UPDATED','TRACKING','DOCUMENTS','ACTIONS'].includes(f)).map(f=>`<th>${esc(LABELS[f]||f)}</th>`).join('')+'<th>Daily Updated</th><th>Tracking</th><th>Documents</th><th>Actions</th></tr>';
+document.getElementById('tbody').innerHTML=found.map(({r,i})=>{let cl=(r['CURRENT GD STATUS']||'').toLowerCase().includes('shipped')?'shipped':(r['CURRENT GD STATUS']||'').toLowerCase().includes('loading')?'loading':'';let u=trackUrl(r['SHIPPING LINE']);let dn=(r.DOCUMENTS||[]).map(x=>`<span class="pill">${esc(x)}</span>`).join('');return `<tr><td><b>${String(i+1).padStart(2,'0')}</b></td>${FIELDS.filter(f=>!['SR NO','DAILY UPDATED','TRACKING','DOCUMENTS','ACTIONS'].includes(f)).map(f=>(f==='CURRENT GD STATUS'||f==='CURRENT GD / SHIPMENT STATUS')?`<td><span class="status ${cl}">${esc(r[f]||'')}</span></td>`:`<td>${esc(r[f]||'')}</td>`).join('')}<td>${esc(r.UPDATED_AT||'')}</td><td>${u?`<a class="linkbtn" href="${u}" target="_blank" rel="noopener">Track ↗</a>`:'—'}</td><td><div class="doclist">${dn||'—'}<button class="smallbtn" onclick="viewDocs('${esc(r._id)}')">View / Download</button></div></td><td><button class="smallbtn" onclick="editRow(${i})">Edit / Update</button><button class="smallbtn red" onclick="deleteRow(${i})">Delete</button></td></tr>`}).join('');
+document.getElementById('recordCount').textContent=`${currentSection}: Showing ${found.length} of ${rows.length} records${party?' for '+party:''}. Serial numbers are automatically arranged 01 onwards; new records are added at the bottom.`}
+function editRow(i){let r=rows[i];editId=r._id;let form=document.getElementById('shipmentForm');FIELDS.forEach(f=>{let el=form.elements.namedItem(f);if(el)el.value=r[f]||''});form.elements.namedItem('REMARKS').value=r.REMARKS||'';document.getElementById('formTitle').textContent='Update Shipment — Daily Progress';getDocs(editId).then(fs=>document.getElementById('existingDocs').textContent=fs.length?'Already attached: '+fs.map(x=>x.name).join(', '):'No files attached yet');showTab('entry')}
+async function viewDocs(id){let win=window.open('about:blank','_blank');if(!win){alert('Browser mein Pop-ups allow karein aur dobara try karein.');return}win.document.write('<p>Documents load ho rahe hain...</p>');let fs=await getDocs(id);if(!fs.length){win.close();alert('Is shipment ke saath actual document save nahi hai. Edit / Update mein file dobara upload karein.');return}win.document.open();win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Shipment Documents</title><style>body{font:16px Arial;padding:24px}a{display:inline-block;margin:8px;padding:10px 14px;background:#123b60;color:white;border-radius:6px;text-decoration:none}</style></head><body><h2>Shipment Documents</h2>'+fs.map((f,i)=>`<p>${esc(f.category)} — ${esc(f.name)} <a id="d${i}">Open / Download</a></p>`).join('')+'</body></html>');win.document.close();fs.forEach((f,i)=>{let url=URL.createObjectURL(f.blob);let a=win.document.getElementById('d'+i);a.href=url;a.target='_blank';a.download=f.name})}
+function deleteRow(i){if(confirm('Is shipment record ko delete karna hai?')){rows.splice(i,1);persist();render()}}
+function buildTracking(){let box=document.getElementById('trackGrid');box.innerHTML=Object.entries(CARRIERS).map(([n,u])=>`<div class="trackcard"><label>${esc(n)}</label><a class="linkbtn" href="${u}" target="_blank" rel="noopener">Open Tracking / Carrier Site ↗</a></div>`).join('')} 
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function exportCSV(){let cols=['SR.NO',...FIELDS.filter(f=>!['SR NO','TRACKING','DOCUMENTS','ACTIONS'].includes(f)),'REMARKS','UPDATED_AT','DOCUMENTS'];let csv='\ufeff'+cols.map(csvCell).join(',')+'\r\n'+rows.map((r,i)=>cols.map(c=>csvCell(c==='SR.NO'?String(i+1).padStart(2,'0'):Array.isArray(r[c])?r[c].join('; '):r[c])).join(',')).join('\r\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Faith_Minerals_Shipment_Backup.csv';a.click();URL.revokeObjectURL(a.href)}
+function parseCSV(t){let out=[],row=[],v='',q=false;for(let i=0;i<t.length;i++){let c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){v+='"';i++}else if(c==='"')q=false;else v+=c}else if(c==='"')q=true;else if(c===','){row.push(v);v=''}else if(c==='\n'){row.push(v.replace(/\r$/,''));out.push(row);row=[];v=''}else v+=c}if(v||row.length){row.push(v);out.push(row)}return out}
+function importCSV(e){let file=e.target.files[0];if(!file)return;let rd=new FileReader();rd.onload=()=>{try{let a=parseCSV(rd.result),h=a.shift().map(x=>x.replace(/^\ufeff/,''));let incoming=a.filter(x=>x.some(y=>y.trim())).map((line,i)=>{let o={_id:'imp-'+Date.now()+'-'+i};h.forEach((k,j)=>{o[k]=line[j]||''});o.DOCUMENTS=(o.DOCUMENTS||'').split(';').filter(Boolean);return o});if(confirm(`${incoming.length} records import honge aur current register replace hoga. Continue?`)){rows=incoming;persist();render();showTab('records')}}catch(err){alert('CSV file read nahi ho saki.')}e.target.value=''};rd.readAsText(file)}
+function exportDocumentManifest(){let a=['SR NO,GD,BL,FI Number,Document filenames'];rows.forEach((r,i)=>a.push([i+1,r['GD NO/BL NO'],r.BL,r['FI NO'],(r.DOCUMENTS||[]).join('; ')].map(csvCell).join(',')));let x=document.createElement('a');x.href=URL.createObjectURL(new Blob([a.join('\n')],{type:'text/csv'}));x.download='Faith_Minerals_Document_List.csv';x.click()}
+document.getElementById('todayStamp').textContent='Today: '+new Date().toLocaleDateString();
+document.getElementById('sectionHint').textContent='Current Section: EXPORT KEPZ — existing shipment data preserved.';document.querySelectorAll('#sectionTabs button').forEach(b=>b.classList.toggle('primary',b.textContent==='EXPORT KEPZ'));buildForm();updateStats();render();
+</script></body></html>
